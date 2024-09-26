@@ -45,4 +45,18 @@ export class UserService {
     await this.findOne(id);
     return this.usersRepository.delete(id);
   }
+
+  async query(query: string) {
+    const users = await this.usersRepository
+      .createQueryBuilder('user')
+      .where('user.name like :name', { name: `%${query}%` })
+      .orWhere('user.email like :email', { email: `%${query}%` })
+      .getMany();
+
+    if (users.length === 0) {
+      throw new HttpException('Nenhum usuario encontrado', HttpStatus.NOT_FOUND);
+    }
+
+    return users;
+  }
 }
