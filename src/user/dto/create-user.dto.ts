@@ -4,7 +4,7 @@ export class CreateUserDto {
    @IsOptional()
    id: number;
 
-   @IsOptional()
+   @IsNotEmpty({ message: 'nome obrigatorio' })
    name: string;
 
    @IsNotEmpty({ message: 'email obrigatorio' })
