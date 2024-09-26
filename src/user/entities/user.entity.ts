@@ -3,15 +3,15 @@ import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateCol
 @Entity('users')
 export class User {
     @PrimaryGeneratedColumn({type: 'bigint'})
-    id: number;
+    readonly id: number;
     @Column()
-    name: string;
+    readonly name: string;
     @Column({ unique: true })
-    email: string;
+    readonly email: string;
     @Column()
-    password: string;
+    readonly password: string;
     @CreateDateColumn({ name: 'created_at' })
-    createdAt: Date;
+    readonly createdAt: Date;
     @UpdateDateColumn({ name: 'updated_at' })
-    updatedAt: Date;
+    readonly updatedAt: Date;
 }
