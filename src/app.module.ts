@@ -2,9 +2,12 @@ import { Module } from '@nestjs/common';
 import { UserModule } from './user/user.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
+import { ScheduleModule } from '@nestjs/schedule';
+import { CronModule } from './cron/cron.module';
 
 @Module({
   imports: [
+    ScheduleModule.forRoot(),
     TypeOrmModule.forRoot({
       type: 'mysql',
       host: 'localhost',
@@ -16,7 +19,8 @@ import { DataSource } from 'typeorm';
       synchronize: true,
       logging: true
     }),
-    UserModule
+    UserModule,
+    CronModule
   ],
   controllers: [],
   providers: [],
