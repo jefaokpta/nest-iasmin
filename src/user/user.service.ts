@@ -4,6 +4,7 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { Repository } from 'typeorm';
 import { User } from './entities/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
+import { hashSync } from 'bcrypt';
 
 @Injectable()
 export class UserService {
@@ -14,7 +15,8 @@ export class UserService {
 
   async create(createUserDto: CreateUserDto): Promise<User> {
     try {
-      return await this.usersRepository.save(createUserDto);
+      const passwordHash = hashSync(createUserDto.password, 10);
+      return await this.usersRepository.save({ ...createUserDto, password: passwordHash });
     } catch (error) {
       throw new HttpException(
         `🧨 FUDEU ${error.message}`,
@@ -33,6 +35,10 @@ export class UserService {
       throw new HttpException('User nao encontrado', HttpStatus.NOT_FOUND);
     }
     return user;
+  }
+
+  findByEmail(email: string) {
+    return this.usersRepository.findOne({ where: { email } });
   }
 
   async update(id: number, updateUserDto: UpdateUserDto) {

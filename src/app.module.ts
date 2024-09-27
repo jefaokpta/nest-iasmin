@@ -4,6 +4,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
 import { ScheduleModule } from '@nestjs/schedule';
 import { CronModule } from './cron/cron.module';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -20,7 +21,8 @@ import { CronModule } from './cron/cron.module';
       logging: true
     }),
     UserModule,
-    CronModule
+    CronModule,
+    AuthModule
   ],
   controllers: [],
   providers: [],
