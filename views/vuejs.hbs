@@ -30,11 +30,11 @@
     setup() {
       const date = ref();
       const users = ref([]);
-        fetch('/vuejs/users')
-          .then(res => res.json())
-          .then(data => {
-            users.value = data;
-          });
+      fetch('/vuejs/users')
+        .then(res => res.json())
+        .then(data => {
+          users.value = data;
+        });
       return {
         date,
         users,
