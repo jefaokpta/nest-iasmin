@@ -4,8 +4,8 @@ import { Cron, CronExpression } from '@nestjs/schedule';
 @Injectable()
 export class CronService {
 
-  @Cron(CronExpression.EVERY_5_SECONDS)
+  @Cron(CronExpression.EVERY_MINUTE)
   handleCron() {
-    console.log('executa a cada 5 segundos')
+    console.log('executa a cada minuto')
   }
 }
