@@ -6,20 +6,18 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { CronModule } from './cron/cron.module';
 import { AuthModule } from './auth/auth.module';
 import { PagesModule } from './pages/pages.module';
+import { ConfigModule } from '@nestjs/config';
+import { MysqlConfigService } from '../config/mysql.config.service';
 
 @Module({
   imports: [
     ScheduleModule.forRoot(),
-    TypeOrmModule.forRoot({
-      type: 'mysql',
-      host: 'localhost',
-      port: 3306,
-      username: 'jefao',
-      password: 'jefao',
-      database: 'iasmin',
-      autoLoadEntities: true,
-      synchronize: true,
-      logging: true
+    ConfigModule.forRoot({
+      isGlobal: true,
+    }),
+    TypeOrmModule.forRootAsync({
+      useClass: MysqlConfigService,
+      inject: [MysqlConfigService],
     }),
     UserModule,
     CronModule,
