@@ -18,9 +18,9 @@ export class MysqlConfigService implements TypeOrmOptionsFactory {
       username: this.configService.get<string>('DB_USER') ?? 'root',
       password: this.configService.get<string>('DB_PASSWORD'),
       database: this.configService.get<string>('DB_NAME'),
+      logging: this.configService.get<string>('DB_LOGGING') === 'true',
+      synchronize: this.configService.get<string>('DB_SYNCHRONIZE') === 'true',
       autoLoadEntities: true,
-      synchronize: true,
-      logging: true,
     };
   }
 }

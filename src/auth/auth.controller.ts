@@ -12,4 +12,9 @@ export class AuthController {
     return this.authService.create(loginDto);
   }
 
+  @Post('create')
+  createUserAwsCognito(@Body() loginDto: LoginDto) {
+    return this.authService.createUserAwsCognito(loginDto);
+  }
+
 }
