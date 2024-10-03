@@ -38,9 +38,11 @@ export class AuthService {
     try {
       const cognitoData = await this.cognitoClient.send(command);
       const payload = this.jwtService.decode(cognitoData.AuthenticationResult!.IdToken!);
-      const controlNumber = payload['custom:controlNumber'];
-      console.log('conseguiu pegar o controlNumber', controlNumber);
-      const token = this.jwtService.sign({ email: loginDto.email, username: cognitoData.AuthenticationResult?.AccessToken });
+      const token = this.jwtService.sign({
+        email: loginDto.email,
+        token: cognitoData.AuthenticationResult?.AccessToken,
+        controlNumber: payload['custom:controlNumber']
+      });
       return { token };
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
