@@ -58,7 +58,7 @@ export class AuthService {
       UserAttributes: [
         {
           Name: 'name',
-          Value: 'Teste',
+          Value: loginDto.name,
         },
         {
           Name: 'email',

@@ -6,6 +6,8 @@
 import { IsEmail, IsNotEmpty } from 'class-validator';
 
 export class LoginDto {
+    @IsNotEmpty()
+    name: string;
     @IsEmail()
     readonly email: string;
     @IsNotEmpty()
