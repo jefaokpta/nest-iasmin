@@ -1,10 +1,14 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { LoginDto } from './dto/login.dto';
 import { UserService } from '../user/user.service';
-import { compareSync } from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
-import { AdminCreateUserCommand, CognitoIdentityProviderClient } from '@aws-sdk/client-cognito-identity-provider';
+import {
+  CognitoIdentityProviderClient, ConfirmSignUpCommand, InitiateAuthCommand,
+  SignUpCommand,
+} from '@aws-sdk/client-cognito-identity-provider';
 import { ConfigService } from '@nestjs/config';
+import { ConfirmSignInDto } from './dto/ConfirmSignIn.dto';
+import * as crypto from 'crypto';
 
 @Injectable()
 export class AuthService {
@@ -14,32 +18,73 @@ export class AuthService {
     private readonly configService: ConfigService,
   ) {}
 
-  async create(loginDto: LoginDto) {
-    const user = await this.userService.findByEmail(loginDto.email);
-    if (!user) {
-      throw new HttpException('sai fora', HttpStatus.UNAUTHORIZED);
+  private readonly cognitoClient = new CognitoIdentityProviderClient({
+    region: 'us-east-1',
+  });
+  private readonly COGNITO_CLIENT_ID = this.configService.get('AWS_COGNITO_USER_POOL_CLIENT_ID')
+  private readonly COGNITO_CLIENT_SECRET = this.configService.get('AWS_COGNITO_USER_POOL_CLIENT_SECRET')
+
+  async login(loginDto: LoginDto) {
+    const command = new InitiateAuthCommand({
+      ClientId: this.COGNITO_CLIENT_ID,
+      AuthFlow: 'USER_PASSWORD_AUTH',
+      AuthParameters: {
+        USERNAME: loginDto.email,
+        PASSWORD: loginDto.password,
+        SECRET_HASH: this.getSecretHash(loginDto.email),
+      },
+    });
+
+    try {
+      const cognitoData = await this.cognitoClient.send(command);
+      const payload = this.jwtService.decode(cognitoData.AuthenticationResult!.IdToken!);
+      const controlNumber = payload['custom:controlNumber'];
+      console.log('conseguiu pegar o controlNumber', controlNumber);
+      const token = this.jwtService.sign({ email: loginDto.email, username: cognitoData.AuthenticationResult?.AccessToken });
+      return { token };
+    } catch (error) {
+      throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
     }
-    if (!compareSync(loginDto.password, user.password)) {
-      throw new HttpException('sai fora', HttpStatus.UNAUTHORIZED);
-    }
-    const payload = { sub: user.id, username: user.name, email: user.email };
-    return {
-      access_token: await this.jwtService.signAsync(payload),
-    };
   }
 
   async createUserAwsCognito(loginDto: LoginDto) {
-    const cognitoClient = new CognitoIdentityProviderClient({
-      region: 'us-east-1',
-    });
-    const command = new AdminCreateUserCommand({
-      UserPoolId: this.configService.get<string>('AWS_USER_POOL_ID'),
+    const command = new SignUpCommand({
+      ClientId: this.COGNITO_CLIENT_ID,
+      SecretHash: this.getSecretHash(loginDto.email),
       Username: loginDto.email,
-      DesiredDeliveryMediums: ['EMAIL'],
-      MessageAction: 'SUPPRESS',
-      TemporaryPassword: loginDto.password,
+      Password: loginDto.password,
+      UserAttributes: [
+        {
+          Name: 'nickname',
+          Value: 'Teste',
+        },
+        {
+          Name: 'email',
+          Value: loginDto.email,
+        },
+        {
+          Name: 'zoneinfo',
+          Value: '100023',
+        },
+      ],
+    });
+    return await this.cognitoClient.send(command);
+  }
+
+  async confirmSignUpUserAwsCognito(confirmSignInDto: ConfirmSignInDto) {
+    const command = new ConfirmSignUpCommand({
+      ClientId: this.COGNITO_CLIENT_ID,
+      SecretHash: this.getSecretHash(confirmSignInDto.email),
+      Username: confirmSignInDto.email,
+      ConfirmationCode: confirmSignInDto.confirmationCode,
     });
 
-    return await cognitoClient.send(command);
+    return await this.cognitoClient.send(command);
+  }
+
+  private getSecretHash(username: string) {
+    return crypto.createHmac("sha256", this.COGNITO_CLIENT_SECRET)
+      .update(`${username}${this.COGNITO_CLIENT_ID}`)
+      .digest("base64");
   }
 }
