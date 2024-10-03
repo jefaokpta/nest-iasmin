@@ -57,7 +57,7 @@ export class AuthService {
       Password: loginDto.password,
       UserAttributes: [
         {
-          Name: 'nickname',
+          Name: 'name',
           Value: 'Teste',
         },
         {
@@ -65,7 +65,7 @@ export class AuthService {
           Value: loginDto.email,
         },
         {
-          Name: 'zoneinfo',
+          Name: 'custom:controlNumber',
           Value: '100023',
         },
       ],
